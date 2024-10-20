@@ -1,0 +1,10 @@
+pip>=24.2
+setuptools
+wheel
+grpcio --only-binary=grpcio
+requests
+google-cloud-speech
+SpeechRecognition
+python-dotenv
+scipy
+pyaudio
