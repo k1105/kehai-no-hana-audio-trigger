@@ -3,10 +3,18 @@ import hmac
 import hashlib
 import base64
 import uuid
+import os
+from os.path import join, dirname
+from dotenv import load_dotenv
+
+load_dotenv(verbose=True)
+
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(dotenv_path)
 
 # APIトークンとシークレットキーを設定
-token = "9aa633e8abbd5942aaffba16b72a932788ab5334781ee687b8b9632d9558ca7b079b5a26138e68ead170b5f8619436ad"
-secret = "4fe045e05906ea2141a293ccf7904232"
+token = os.environ.get("TOKEN")
+secret = os.environ.get("SECRET")
 
 # Unix時間（13桁）
 t = int(round(time.time() * 1000))
