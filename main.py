@@ -80,7 +80,7 @@ def transcribe_and_control():
                     print(f"認識結果: {transcript}")
 
                     # フレーズに応じてSwitchBotを操作
-                    if any(phrase in transcript for phrase in ["おはよう", "いってきます", "ただいま"]):
+                    if any(phrase in transcript for phrase in ["おはよう", "いってきます", "行ってきます", "ただいま"]):
                         print(f"{transcript}が検出されました。山岸ボタンを操作します。")
                         press_button()
 
