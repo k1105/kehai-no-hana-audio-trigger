@@ -1,7 +1,8 @@
+from gpiozero import LED
+import time
 import os
 from os.path import join, dirname
 from dotenv import load_dotenv
-import time
 import hmac
 import hashlib
 import base64
@@ -9,30 +10,24 @@ import uuid
 import requests
 import speech_recognition as sr
 from google.cloud import speech
-import RPi.GPIO as GPIO
 
-# GPIOの設定
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(17, GPIO.OUT)  # GPIO17を出力モードに設定
+# GPIO17に接続されたLEDのインスタンス作成
+led = LED(17)
 
+# 環境変数をロード
 load_dotenv(verbose=True)
-
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 
-# APIトークンとシークレットキーを設定
 token = os.environ.get("TOKEN")
 secret = os.environ.get("SECRET")
-device_id = "D03534382360"  # 山岸ボタンのデバイスID
+device_id = "D03534382360"
 
-# 音声認識の設定
 recognizer = sr.Recognizer()
 mic = sr.Microphone()
 
-# Google Cloud Speech-to-Text クライアントの初期化
 client = speech.SpeechClient()
 
-# 署名を生成する関数
 def generate_signature():
     t = int(round(time.time() * 1000))
     nonce = uuid.uuid4()
@@ -46,12 +41,11 @@ def generate_signature():
         "Content-Type": "application/json"
     }
 
-# SwitchBotのボタンを押す関数
 def press_button():
     url = f"https://api.switch-bot.com/v1.1/devices/{device_id}/commands"
     headers = generate_signature()
     payload = {
-        "command": "press",  # ボタンを押す動作
+        "command": "press",
         "parameter": "default",
         "commandType": "command"
     }
@@ -61,48 +55,38 @@ def press_button():
     else:
         print(f"エラー: {response.status_code}, メッセージ: {response.text}")
 
-# LEDを点灯させる関数
-def turn_on_led():
-    GPIO.output(17, GPIO.HIGH)  # LEDを点灯させる
-    time.sleep(1)  # 1秒間点灯
-    GPIO.output(17, GPIO.LOW)  # LEDを消灯
-
-# 音声認識とボタン操作、LED制御を連動させる関数
+# 音声認識と連動してSwitchBotを操作し、LEDを点灯させる
 def transcribe_and_control():
-    try:
-        while True:
-            with mic as source:
-                print("マイクからの入力を待っています...")
-                recognizer.adjust_for_ambient_noise(source)
-                try:
-                    # スピーチを録音して文字起こし
-                    audio = recognizer.listen(source, timeout=None, phrase_time_limit=10)
-                    response = client.recognize(
-                        config={
-                            "encoding": speech.RecognitionConfig.AudioEncoding.LINEAR16,
-                            "sample_rate_hertz": 44100, # macの場合は48000
-                            "language_code": "ja-JP",
-                        },
-                        audio={"content": audio.get_wav_data()},
-                    )
+    while True:
+        with mic as source:
+            print("マイクからの入力を待っています...")
+            recognizer.adjust_for_ambient_noise(source)
+            try:
+                audio = recognizer.listen(source, timeout=None, phrase_time_limit=10)
+                response = client.recognize(
+                    config={
+                        "encoding": speech.RecognitionConfig.AudioEncoding.LINEAR16,
+                        "sample_rate_hertz": 48000,
+                        "language_code": "ja-JP",
+                    },
+                    audio={"content": audio.get_wav_data()},
+                )
 
-                    # 認識結果を取得
-                    for result in response.results:
-                        transcript = result.alternatives[0].transcript
-                        print(f"認識結果: {transcript}")
+                for result in response.results:
+                    transcript = result.alternatives[0].transcript
+                    print(f"認識結果: {transcript}")
 
-                        # フレーズに応じてSwitchBotを操作およびLEDを点灯
-                        if any(phrase in transcript for phrase in ["おはよう", "いってきます", "行ってきます", "ただいま"]):
-                            print(f"{transcript}が検出されました。山岸ボタンを操作します。")
-                            press_button()
-                            turn_on_led()  # LEDを点灯
+                    if any(phrase in transcript for phrase in ["おはよう", "いってきます", "行ってきます", "ただいま"]):
+                        print(f"{transcript}が検出されました。山岸ボタンを操作し、LEDを点灯します。")
+                        press_button()
+                        led.on()  # LEDを点灯
+                        time.sleep(1)  # 1秒間点灯
+                        led.off()  # LEDを消灯
 
-                except sr.WaitTimeoutError:
-                    print("無音が続いています。")
-                except Exception as e:
-                    print(f"エラーが発生しました: {e}")
-    finally:
-        GPIO.cleanup()  # プログラム終了時にGPIOをクリーンアップ
+            except sr.WaitTimeoutError:
+                print("無音が続いています。")
+            except Exception as e:
+                print(f"エラーが発生しました: {e}")
 
 # 実行
 transcribe_and_control()
