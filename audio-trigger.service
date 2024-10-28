@@ -8,11 +8,3 @@ Restart=always
 
 [Install]
 WantedBy=multi-user.target
-
-----
-
-#!bin/bash
-cd /home/pi/Desktop/kehai-no-hana-audio-trigger
-source myenv/bin/activate
-export GOOGLE_APPLICATION_CREDENTIALS=credentials/kehai-no-hana-test.json
-python main.py
