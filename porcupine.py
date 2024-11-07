@@ -67,6 +67,7 @@ audio_stream = pa.open(
     rate=porcupine.sample_rate,
     channels=1,
     format=pyaudio.paInt16,
+    input_device_index=2,
     input=True,
     frames_per_buffer=porcupine.frame_length)
 
