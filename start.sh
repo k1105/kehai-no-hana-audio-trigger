@@ -11,6 +11,9 @@ echo "Activating virtual environment..."
 source myenv/bin/activate
 echo "Virtual environment activated."
 
+which python
+python --version
+
 echo "Starting Python script..."
 python main.py
 echo "Python script finished with exit code $?"
