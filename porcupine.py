@@ -56,7 +56,7 @@ def press_button():
 # Porcupineの初期化
 porcupine = pvporcupine.create(
     access_key=accesskey,
-    keyword_paths=["ppn/ohayou_ja_mac_v3_0_0.ppn", "ppn/ittekimasu_ja_mac_v3_0_0.ppn", "ppn/tadaima_ja_mac_v3_0_0.ppn"],  # カスタムキーワードのパス
+    keyword_paths=["ppn/ohayou_ja_raspberry-pi_v3_0_0.ppn", "ppn/ittekimasu_ja_raspberry-pi_v3_0_0.ppn", "ppn/tadaima_ja_raspberry-pi_v3_0_0.ppn"],  # カスタムキーワードのパス
     model_path="pv/porcupine_params_ja.pv" 
 )
 
