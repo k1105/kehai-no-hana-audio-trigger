@@ -1,4 +1,4 @@
-# from gpiozero import LED
+from gpiozero import LED
 import time
 import os
 from os.path import join, dirname
@@ -13,7 +13,7 @@ import pyaudio
 import struct
 
 # GPIO17に接続されたLEDのインスタンス作成
-# led = LED(17)
+led = LED(17)
 
 # 環境変数をロード
 load_dotenv(verbose=True)
@@ -87,9 +87,9 @@ def listen_and_control():
                     print("ただいま")
                 print("キーワードが検出されました。山岸ボタンを操作し、LEDを点灯します。")
                 press_button()
-                # led.on()
-                # time.sleep(1)
-                # led.off()
+                led.on()
+                time.sleep(1)
+                led.off()
     except KeyboardInterrupt:
         print("終了します。")
     finally:
