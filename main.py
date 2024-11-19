@@ -21,7 +21,7 @@ load_dotenv(dotenv_path)
 
 token = os.environ.get("TOKEN")
 secret = os.environ.get("SECRET")
-device_id = "D03534382360"
+device_id = "C76A03063977"
 
 recognizer = sr.Recognizer()
 mic = sr.Microphone()
@@ -51,7 +51,7 @@ def press_button():
     }
     response = requests.post(url, headers=headers, json=payload)
     if response.status_code == 200:
-        print("山岸ボタンを押しました。")
+        print("ボット77を押しました。")
     else:
         print(f"エラー: {response.status_code}, メッセージ: {response.text}")
 
@@ -77,7 +77,7 @@ def transcribe_and_control():
                     print(f"認識結果: {transcript}")
 
                     if any(phrase in transcript for phrase in ["おはよう", "いってきます", "行ってきます", "ただいま"]):
-                        print(f"{transcript}が検出されました。山岸ボタンを操作し、LEDを点灯します。")
+                        print(f"{transcript}が検出されました。ボット77を操作し、LEDを点灯します。")
                         press_button()
                         led.on()  # LEDを点灯
                         time.sleep(1)  # 1秒間点灯
