@@ -1,4 +1,4 @@
-from gpiozero import LED
+# from gpiozero import LED
 import time
 import os
 from os.path import join, dirname
@@ -8,9 +8,8 @@ import hashlib
 import base64
 import uuid
 import requests
-import pvporcupine
-import pyaudio
-import struct
+import speech_recognition as sr
+from google.cloud import speech
 
 # GPIO17に接続されたLEDのインスタンス作成
 led = LED(17)
@@ -22,8 +21,12 @@ load_dotenv(dotenv_path)
 
 token = os.environ.get("TOKEN")
 secret = os.environ.get("SECRET")
-accesskey = os.environ.get("ACCESSKEY")
 device_id = "D03534382360"
+
+recognizer = sr.Recognizer()
+mic = sr.Microphone()
+
+client = speech.SpeechClient()
 
 def generate_signature():
     t = int(round(time.time() * 1000))
@@ -46,59 +49,44 @@ def press_button():
         "parameter": "default",
         "commandType": "command"
     }
-
     response = requests.post(url, headers=headers, json=payload)
     if response.status_code == 200:
         print("山岸ボタンを押しました。")
     else:
         print(f"エラー: {response.status_code}, メッセージ: {response.text}")
 
-# Porcupineの初期化
-porcupine = pvporcupine.create(
-    access_key=accesskey,
-    keyword_paths=["ppn/ohayou_ja_raspberry-pi_v3_0_0.ppn", "ppn/ittekimasu_ja_raspberry-pi_v3_0_0.ppn", "ppn/tadaima_ja_raspberry-pi_v3_0_0.ppn"],  # カスタムキーワードのパス
-    model_path="pv/porcupine_params_ja.pv" 
-)
+# 音声認識と連動してSwitchBotを操作し、LEDを点灯させる
+def transcribe_and_control():
+    while True:
+        with mic as source:
+            print("マイクからの入力を待っています...")
+            recognizer.adjust_for_ambient_noise(source)
+            try:
+                audio = recognizer.listen(source, timeout=None, phrase_time_limit=10)
+                response = client.recognize(
+                    config={
+                        "encoding": speech.RecognitionConfig.AudioEncoding.LINEAR16,
+                        "sample_rate_hertz": 44100,
+                        "language_code": "ja-JP",
+                    },
+                    audio={"content": audio.get_wav_data()},
+                )
 
-# PyAudioの初期化
-pa = pyaudio.PyAudio()
+                for result in response.results:
+                    transcript = result.alternatives[0].transcript
+                    print(f"認識結果: {transcript}")
 
-audio_stream = pa.open(
-    rate=porcupine.sample_rate,
-    channels=1,
-    format=pyaudio.paInt16,
-    input_device_index=3,
-    input=True,
-    frames_per_buffer=porcupine.frame_length)
+                    if any(phrase in transcript for phrase in ["おはよう", "いってきます", "行ってきます", "ただいま"]):
+                        print(f"{transcript}が検出されました。山岸ボタンを操作し、LEDを点灯します。")
+                        press_button()
+                        led.on()  # LEDを点灯
+                        time.sleep(1)  # 1秒間点灯
+                        led.off()  # LEDを消灯
 
-def listen_and_control():
-    try:
-        print("キーワードを待機しています...")
-        while True:
-            pcm = audio_stream.read(porcupine.frame_length, exception_on_overflow=False)
-            pcm = struct.unpack_from("h" * porcupine.frame_length, pcm)
-            keyword_index = porcupine.process(pcm)
-            if keyword_index >= 0:
-                if keyword_index==0:
-                    print("おはよう")
-                elif keyword_index==1:
-                    print("行ってきます")
-                else:
-                    print("ただいま")
-                print("キーワードが検出されました。山岸ボタンを操作し、LEDを点灯します。")
-                press_button()
-                led.on()
-                time.sleep(1)
-                led.off()
-    except KeyboardInterrupt:
-        print("終了します。")
-    finally:
-        if audio_stream is not None:
-            audio_stream.close()
-        if pa is not None:
-            pa.terminate()
-        if porcupine is not None:
-            porcupine.delete()
+            except sr.WaitTimeoutError:
+                print("無音が続いています。")
+            except Exception as e:
+                print(f"エラーが発生しました: {e}")
 
 # 実行
-listen_and_control()
+transcribe_and_control()
