@@ -1,4 +1,4 @@
-# from gpiozero import LED
+from gpiozero import LED
 import time
 import os
 from os.path import join, dirname
@@ -66,7 +66,7 @@ def transcribe_and_control():
                 response = client.recognize(
                     config={
                         "encoding": speech.RecognitionConfig.AudioEncoding.LINEAR16,
-                        "sample_rate_hertz": 44100,
+                        "sample_rate_hertz": 48000,
                         "language_code": "ja-JP",
                     },
                     audio={"content": audio.get_wav_data()},
