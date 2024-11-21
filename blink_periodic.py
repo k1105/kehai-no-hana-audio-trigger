@@ -9,7 +9,7 @@ led = PWMLED(17)
 try:
     while True:
         smooth_blink(led, duration=1)  # 1秒間で明滅
-        time.sleep(59)  # 1分 - 1秒の残りの時間待機
+        time.sleep(29)  # 1分 - 1秒の残りの時間待機
 except KeyboardInterrupt:
     print("プログラムを終了します。")
     led.off()  # LEDを消灯
