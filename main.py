@@ -10,11 +10,11 @@ import requests
 import speech_recognition as sr
 from google.cloud import speech
 
-from gpiozero import PWMLED
-from led_utils import smooth_blink  # 外部モジュールから関数をインポート
+# from gpiozero import PWMLED
+# from led_utils import smooth_blink  # 外部モジュールから関数をインポート
 
 # GPIO17に接続されたLEDのインスタンス作成
-led = PWMLED(17)
+# led = PWMLED(17)
 
 # 環境変数をロード
 load_dotenv(verbose=True)
@@ -81,7 +81,7 @@ def transcribe_and_control():
                     if any(phrase in transcript for phrase in ["おはよう", "いってきます", "行ってきます", "ただいま"]):
                         print(f"{transcript}が検出されました。ボット77を操作し、LEDを点灯します。")
                         press_button()
-                        smooth_blink(led, duration=1)  # 1秒間で明滅
+                        # smooth_blink(led, duration=1)  # 1秒間で明滅
 
             except sr.WaitTimeoutError:
                 print("無音が続いています。")
