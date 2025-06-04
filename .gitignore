@@ -1,4 +1,4 @@
-.env
+.env*
 credentials/
 myenv
 .DS_Store
