@@ -23,7 +23,7 @@ load_dotenv(dotenv_path)
 
 token = os.environ.get("TOKEN")
 secret = os.environ.get("SECRET")
-device_id = "C76A03063977"
+device_id = os.environ.get("DEVICE_ID")
 
 recognizer = sr.Recognizer()
 mic = sr.Microphone()
